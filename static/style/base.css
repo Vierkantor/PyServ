@@ -1,0 +1,45 @@
+body {
+	background-color: #8be;
+	font-family: sans-serif;
+}
+
+div.all {
+	margin-left: 5%;
+	margin-right: 5%;
+	background-color: #ddd;
+}
+
+div.header {
+	border-top: solid 1px #333;
+	border-left: solid 1px #333;
+	border-right: solid 1px #333;
+	margin-left: 1px;
+	margin-right: 1px;
+	padding-left: 3px;
+}
+
+div.header h1 {
+	margin: 0px;
+}
+
+div.body {
+	padding: 10px 5px 10px 5px;
+	background-color: #eee;
+}
+
+div.footer {
+	border-left: solid 1px #333;
+	border-right: solid 1px #333;
+	border-bottom: solid 1px #333;
+	margin-left: 1px;
+	margin-right: 1px;
+	padding-left: 3px;
+	font-size: 80%;
+}
+
+ul.footnotes {
+	padding-left: 0px;
+	list-style-position: inside;
+	list-style-type: circle;
+	margin: 0px;
+}

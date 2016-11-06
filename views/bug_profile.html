@@ -1,0 +1,9 @@
+<%inherit file="base.tpl"/>
+
+<%block name="title">Bug #${bug.id}: ${bug.title}</%block>
+<%namespace name="bug_view" file="bug_base.tpl"/>
+
+${bug_view.current_status(bug)}
+${bug_view.messages(bug)}
+
+<%include file="forms/bug_user_message.tpl"/>

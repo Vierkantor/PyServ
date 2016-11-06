@@ -1,0 +1,23 @@
+<%inherit file="base.tpl"/>
+
+<%block name="title">Bug overview</%block>
+<%namespace name="bug_view" file="bug_base.tpl"/>
+
+<a href="/service/bug/new">Report a bug</a>
+
+<p>The following bugs have been entered into the database:</p>
+
+% if bugs:
+ <table>
+  <thead>
+   ${bug_view.table_head()}
+  </thead>
+  <tbody>
+   % for bug in bugs:
+    ${bug_view.table_row(bug)}
+   % endfor
+  </tbody>
+ </table>
+% else:
+ <p>No bugs have been left unsquashed, hooray!</p>
+% endif
