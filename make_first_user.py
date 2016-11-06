@@ -3,6 +3,7 @@ from sys import argv, exit
 
 from pyserv.database import db
 from pyserv.person import User
+from pyserv.apikey import APIKey
 
 try:
 	username = argv[1]
