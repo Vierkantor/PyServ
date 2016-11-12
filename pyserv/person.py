@@ -42,7 +42,13 @@ class Person(Contact):
 
 class User(Person):
 	id = db.Column(db.Integer, db.ForeignKey('person.id'), primary_key=True)
+	"""The user's password, in a hashed form.
+	
+	The non-hashed format should !!NEVER!! be stored permanently,
+	because that is a giant, hideous security breach.
+	"""
 	password = db.Column(db.LargeBinary(255), nullable=False)
+	"""Salt for hashing the password."""
 	salt = db.Column(db.LargeBinary(255), nullable=False)
 
 	# see also apikey.py
