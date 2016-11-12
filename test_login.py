@@ -15,6 +15,17 @@ def login(client, username, password):
 		follow_redirects=True,
 	)
 
+def ensure_logged_in(client, user):
+	"""Log in as the given user.
+
+	The user must be made by one of the test_user factories, e.g. god_user.
+	Otherwise, the password is inaccessible because storing plaintext passwords is a Bad Thing.
+	"""
+	response = login(client, user.nickname, user._actual_password)
+	base_test.check_response(response)
+	assert b'You were logged in' in response.data
+	return response
+
 def logout(client):
 	return client.get('/service/logout',
 		follow_redirects=True,

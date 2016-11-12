@@ -1,6 +1,9 @@
 # PyServ configuration
 pyserv/config.py
 
+# Vim swap files
+*.swp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

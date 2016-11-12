@@ -1,0 +1,14 @@
+<%inherit file="base.tpl"/>
+
+<%block name="title">Blog post overview</%block>
+<%namespace name="blog_view" file="blog_base.tpl"/>
+
+% if posts:
+ <div class="blog_post_list">
+ % for post in posts:
+  ${blog_view.sneak_peek(post)}
+ % endfor
+ </div>
+% else:
+ <p>Unfortunately, no blog posts have been written yet.</p>
+% endif

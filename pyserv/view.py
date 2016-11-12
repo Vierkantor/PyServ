@@ -4,6 +4,7 @@ Most basic pages are defined here, but any subsites have their own views.
 You could technically consider them more of a controller, but the whole MVC thing is overplayed.
 """
 
+from datetime import datetime
 from flask import abort, flash, redirect, request, session, url_for
 import flask_mako
 
@@ -11,6 +12,7 @@ from .apikey import APIKey
 from .app import app
 from .auth import levels, require_auth, set_shadow_user
 from .bug import Bug, BugPriority, BugStatus, BugUserMessage, bug_from_user, get_all_bugs, new_message
+from .blog import BlogPost, all_posts
 from . import config
 from .database import db
 from .person import User, get_login, get_logged_in
@@ -179,3 +181,24 @@ def bug_search_api():
 		return {}
 	from_title = Bug.query.filter(Bug.title.like(term)).all()
 	return from_title
+
+@app.route('/blog')
+def blog_overview():
+	return render_template("blog_overview.html", posts=all_posts(start=0, count=10))
+@app.route('/blog/new', methods=["GET", "POST"])
+@require_auth(levels.blog)
+def blog_new_post():
+	if request.method == "GET":
+		return render_template("blog_new_post.html")
+	title = request.form.get('title', 'A Blog Post to Never Forget')
+	contents = request.form.get('contents', '')
+	new_post = BlogPost(title=title, contents=contents, posted=datetime.now())
+	db.session.add(new_post)
+	db.session.commit()
+	flash("Post blogged!")
+	return redirect(url_for('blog_post_profile', post_id=new_post.id))
+
+@app.route('/blog/<post_id>')
+def blog_post_profile(post_id):
+	post = BlogPost.query.get_or_404(post_id)
+	return render_template('post_profile.html', post=post)

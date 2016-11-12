@@ -17,6 +17,7 @@ class levels(Enum):
 	god = 2 # access to everything
 	shadow_god = 3 # the user or the shadow_user is a god
 	no_key = 4 # the user is not using an API key
+	blog = 5 # the user may make new blog posts and edit their own
 
 def _has_auth_any(user):
 	return True
@@ -33,6 +34,8 @@ def _has_auth_no_key(user):
 	if 'current_user' not in session:
 		return False
 	return user.id == session['current_user']
+def _has_auth_blog(user):
+	return False # TODO let non-gods make blog posts
 
 _auth_lookup = {
 	levels.any: _has_auth_any,
@@ -40,6 +43,7 @@ _auth_lookup = {
 	levels.god: _has_auth_god,
 	levels.shadow_god: _has_auth_shadow_god,
 	levels.no_key: _has_auth_no_key,
+	levels.blog: _has_auth_blog,
 }
 
 Unspecified = object()

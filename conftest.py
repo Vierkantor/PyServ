@@ -30,7 +30,10 @@ def test_user():
 	from pyserv.database import db
 	from pyserv.person import User
 	def make_test_user():
-		test_user = User(full_name="Test User", nickname="test{}".format(uuid.uuid4()), password="")
+		password = ""
+		test_user = User(full_name="Test User", nickname="test{}".format(uuid.uuid4()), password=password)
+		# allow the user to actually log in
+		test_user._actual_password = password
 		db.session.add(test_user)
 		db.session.commit()
 		return test_user
@@ -48,3 +51,7 @@ def god_user(test_user):
 		config.god_ids.add(god_user.id)
 		return god_user
 	return make_god_user
+@pytest.fixture
+def blog_user(test_user):
+	"""A factory for users that may write blog articles."""
+	return god_user(test_user) # TODO: when we've implemented actual blog auth, be less subtle
