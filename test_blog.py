@@ -8,9 +8,12 @@ from pyserv.blog import BlogPost, all_posts
 
 from test_login import ensure_logged_in
 
-def make_new_post(commit_change=True):
+def make_new_post(commit_change=True, public=True):
 	"""Make a new blog post with a random title and contents."""
-	new_post = BlogPost(title="test{}".format(uuid4()), contents=str(uuid4()), posted=datetime.now())
+	new_post = BlogPost(title="test{}".format(uuid4()), contents=str(uuid4()),
+			posted=datetime.now(),
+			public=public,
+	)
 	if commit_change:
 		db.session.add(new_post)
 		db.session.commit()
@@ -60,3 +63,20 @@ def test_new_blog(client, blog_user):
 	base_test.check_response(response)
 	assert title.encode('utf-8') in response.data
 	assert contents.encode('utf-8') in response.data
+
+def test_visibility(client, blog_user):
+	"""Check that private posts are invisible to regular users but not to blog users."""
+	post_private = make_new_post(public=False)
+	post_public = make_new_post(public=True)
+	posts_no_auth = all_posts(start=0, count=2, user=None)
+	assert post_private not in posts_no_auth
+	assert not post_private.should_see(None)
+	assert post_public in posts_no_auth
+	assert post_public.should_see(None)
+
+	author = blog_user()
+	posts_auth = all_posts(start=0, count=2, user=author)
+	assert post_private in posts_auth
+	assert post_private.should_see(author)
+	assert post_public in posts_auth
+	assert post_public.should_see(author)

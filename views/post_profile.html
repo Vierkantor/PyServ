@@ -1,5 +1,6 @@
 <%inherit file="base.tpl"/>
+<%namespace name="blog_view" file="blog_base.tpl"/>
 
-<%block name="title">${post.title}</%block>
+<%block name="title">${blog_view.title(post)}</%block>
 
 <p class="post_contents">${post.contents}</p>
