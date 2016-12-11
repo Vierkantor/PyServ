@@ -10,7 +10,7 @@ import flask_mako
 
 from .apikey import APIKey
 from .app import app
-from .auth import levels, require_auth, set_shadow_user
+from .auth import has_auth, levels, require_auth, set_shadow_user
 from .bug import Bug, BugPriority, BugStatus, BugUserMessage, bug_from_user, get_all_bugs, new_message
 from .blog import BlogPost, all_posts
 from . import config
@@ -21,6 +21,13 @@ from .person import User, get_login, get_logged_in
 def inject_lang():
 	"""Pages automatically report their language as English."""
 	return {'lang': 'en'}
+@app.context_processor
+def inject_auth():
+	"""You can access various auth functions from templates."""
+	return {
+			'has_auth': has_auth,
+			'levels': levels,
+	}
 @app.context_processor
 def inject_current_user():
 	"""Grant access to the logged in user (and the shadowed user)."""
@@ -201,5 +208,28 @@ def blog_new_post():
 
 @app.route('/blog/<post_id>')
 def blog_post_profile(post_id):
-	post = BlogPost.query.get_or_404(post_id)
+	post = BlogPost.query.get(post_id)
+	if not post or not (post.public or has_auth(levels.blog)):
+		# return 403 to not leak any information about public posts
+		return abort(403)
 	return render_template('post_profile.html', post=post)
+
+@app.route('/blog/<post_id>/edit', methods=["GET", "POST"])
+@require_auth(levels.blog)
+def blog_edit_post(post_id):
+	post = BlogPost.query.get(post_id)
+	if not post or not (post.public or has_auth(levels.blog)):
+		# return 403 to not leak any information about public posts
+		return abort(403)
+	if request.method == "GET":
+		return render_template('blog_edit_post.html', post=post)
+
+	# TODO: genericize this whole construction for new/edit
+	# TODO: genericize this whole construction for other objects
+	post.title = request.form.get('title', post.title)
+	post.contents = request.form.get('contents', post.contents)
+	post.public = bool(request.form.getlist('public'))
+	db.session.add(post)
+	db.session.commit()
+	flash("Your post has been updated!")
+	return redirect(url_for('blog_post_profile', post_id=post.id))

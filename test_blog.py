@@ -1,4 +1,3 @@
-from datetime import datetime
 from uuid import uuid4
 
 import base_test
@@ -8,12 +7,16 @@ from pyserv.blog import BlogPost, all_posts
 
 from test_login import ensure_logged_in
 
-def make_new_post(commit_change=True, public=True):
-	"""Make a new blog post with a random title and contents."""
-	new_post = BlogPost(title="test{}".format(uuid4()), contents=str(uuid4()),
-			posted=datetime.now(),
-			public=public,
-	)
+def make_new_post(commit_change=True, title=None, contents=None, public=True):
+	"""Make a new blog post with a random title and contents.
+	If title or contents are given, use those values instead.
+	"""
+	if title is None:
+		title = "test{}".format(uuid4())
+	if contents is None:
+		contents = str(uuid4())
+	new_post = BlogPost(title=title, contents=contents, public=public)
+
 	if commit_change:
 		db.session.add(new_post)
 		db.session.commit()
@@ -80,3 +83,35 @@ def test_visibility(client, blog_user):
 	assert post_private.should_see(author)
 	assert post_public in posts_auth
 	assert post_public.should_see(author)
+
+def test_private_accessibility(client):
+	"""Check that private posts can't be seen through url manipulation."""
+	post_private = make_new_post(public=False)
+	response = client.get('/blog/{}'.format(post_private.id))
+	base_test.check_response(response, expected=403)
+
+def test_edit_blog(client, blog_user):
+	"""Make a blog post via the web interface and ensure it shows up on the front page."""
+	post = make_new_post()
+	edit_url = '/blog/{}/edit'.format(post.id)
+
+	# require the right amount of auth - you need to be logged in
+	base_test.check_response(client.get(edit_url), expected=403)
+	# but when you're logged in, you can post
+	author = blog_user()
+	base_test.check_response(ensure_logged_in(client, author))
+	base_test.check_response(client.get(edit_url))
+
+	# then post the required data
+	title = str(uuid4())
+	contents = str(uuid4())
+	response = client.post(edit_url, data={
+		"title": title,
+		"contents": contents,
+	}, follow_redirects=True)
+	base_test.check_response(response)
+	# and check it appears in the blog posts
+	response = client.get('/blog')
+	base_test.check_response(response)
+	assert title.encode('utf-8') in response.data
+	assert contents.encode('utf-8') in response.data

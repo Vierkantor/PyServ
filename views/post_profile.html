@@ -3,4 +3,8 @@
 
 <%block name="title">${blog_view.title(post)}</%block>
 
+%if has_auth(levels.blog):
+ ${blog_view.post_buttons(post)}
+%endif
+
 <p class="post_contents">${post.contents}</p>
