@@ -61,7 +61,11 @@ class User(Person):
 	def __init__(self, *, password, **kwargs):
 		super().__init__(**kwargs)
 		self.salt = urandom(64)
-		self.password = pbkdf2_hmac('sha256', password.encode('utf-8'), self.salt, 100000)
+		self.password_from_unhashed(password)
+
+	def password_from_unhashed(self, unhashed):
+		"""Set the user's password from an unhashed string."""
+		self.password = pbkdf2_hmac('sha256', unhashed.encode('utf-8'), self.salt, 100000)
 
 	def __repr__(self):
 		return "User <{} '{}'>".format(self.id, self.full_name)
