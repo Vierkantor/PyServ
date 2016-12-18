@@ -15,13 +15,26 @@ def login(client, username, password):
 		follow_redirects=True,
 	)
 
+def login_as(client, user):
+	"""Get the response when logging in as the given user.
+
+	The user must be made by one of the test_user factories, e.g. god_user.
+	Otherwise, the password is inaccessible because storing plaintext passwords is a Bad Thing.
+
+	See also ensure_logged_in if you want to get some auth level before running.
+
+	Returns a response of the login page.
+	You can use base_test.check_response to check that the login succeeded.
+	"""
+	return login(client, user.nickname, user._actual_password)
+
 def ensure_logged_in(client, user):
-	"""Log in as the given user.
+	"""Log in as the given user, raising an error if it fails.
 
 	The user must be made by one of the test_user factories, e.g. god_user.
 	Otherwise, the password is inaccessible because storing plaintext passwords is a Bad Thing.
 	"""
-	response = login(client, user.nickname, user._actual_password)
+	response = login_as(client, user)
 	base_test.check_response(response)
 	assert b'You were logged in' in response.data
 	return response
