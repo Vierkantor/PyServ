@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import uuid4
 
 import base_test
@@ -99,7 +100,7 @@ def test_edit_blog(client, blog_user):
 	base_test.check_response(client.get(edit_url), expected=403)
 	# but when you're logged in, you can post
 	author = blog_user()
-	base_test.check_response(ensure_logged_in(client, author))
+	ensure_logged_in(client, author)
 	base_test.check_response(client.get(edit_url))
 
 	# then post the required data
@@ -115,3 +116,29 @@ def test_edit_blog(client, blog_user):
 	base_test.check_response(response)
 	assert title.encode('utf-8') in response.data
 	assert contents.encode('utf-8') in response.data
+
+def test_editing_updates_values(client, blog_user):
+	"""When editing a blog post, the last updated time should be automatically
+	changed to be right when the update was sent out."""
+
+	# give us the right amount of auth
+	author = blog_user()
+	ensure_logged_in(client, author)
+
+	# make a post that is very old
+	post = make_new_post(commit_change=False)
+	post.last_updated = datetime.fromtimestamp(0)
+	db.session.add(post)
+	db.session.commit()
+
+	before_update = datetime.now()
+
+	# update it a bit
+	edit_url = '/blog/{}/edit'.format(post.id)
+	base_test.check_response(client.post(edit_url, data={
+		"contents": str(uuid4()),
+	}, follow_redirects=True))
+
+	# and check that it has changed
+	updated_post = BlogPost.query.get(post.id)
+	assert updated_post.last_updated >= before_update

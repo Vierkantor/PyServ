@@ -229,6 +229,7 @@ def blog_edit_post(post_id):
 	post.title = request.form.get('title', post.title)
 	post.contents = request.form.get('contents', post.contents)
 	post.public = bool(request.form.getlist('public'))
+	post.last_updated = datetime.now()
 	db.session.add(post)
 	db.session.commit()
 	flash("Your post has been updated!")
