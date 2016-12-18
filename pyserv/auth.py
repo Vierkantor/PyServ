@@ -26,6 +26,9 @@ def _has_auth_logged_in(user):
 def _has_auth_god(user):
 	return user is not None and user.id in config.god_ids
 def _has_auth_shadow_god(user):
+	# Note that this condition shouldn't be true,
+	# as long as the has_auth function doesn't change.
+	# Of course, that's a bit of a dangerous assumption.
 	if _has_auth_god(user):
 		return True
 	if 'shadow_user' in session:

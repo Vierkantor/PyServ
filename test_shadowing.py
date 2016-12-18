@@ -39,6 +39,12 @@ def test_shadow_valid(client, god_user, test_user):
 	assert session['shadow_user'] == god.id
 	assert get_logged_in() == test
 
+	# after shadowing, you should also be able to unshadow
+	base_test.check_response(shadow_user(client, None))
+	assert session['current_user'] == god.id
+	assert 'shadow_user' not in session or session['shadow_user'] is None
+	assert get_logged_in() == god
+
 def test_shadow_replace(client, god_user, test_user):
 	"""Shadowing a user when already shadowing should work the same as unshadowing and reshadowing."""
 	god = god_user()
